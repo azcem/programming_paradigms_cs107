@@ -18,8 +18,25 @@
 
 
 
+//Actual assignment
 char *ConcatAll(nodeType *list) {
-  printf("\n");
+  if (!list || *list == Nil || *list == Integer) return strdup("");
+  if (*list == String) {
+    char* str = strdup((char*)(list+1));
+    return str;
+  }
+  if (*list == List) {
+    nodeType* firstBranch = *(nodeType**)((char*)list + sizeof(nodeType));
+    char* front = ConcatAll(firstBranch);
+    nodeType* secondBranch = *(nodeType**)((char*)list + sizeof(nodeType) + sizeof(nodeType*));
+    char* back = ConcatAll(secondBranch);
+    char* str = malloc(strlen(front) + strlen(back) + 1);
+    strcpy(str, front);
+    strcpy(str+strlen(front), back);
+    free(back);
+    free(front);
+    return str;
+  }
 }
 
 //driver
@@ -39,7 +56,9 @@ int main(void) {
       )
     )
   ;
-  printList(*gameThree, gameThree+1, true);
+  char* str = ConcatAll(gameThree);
+  printf("%s ", str);
+  free(str);
   freeNodes(gameThree);
   int i4 = 4, i5 = 5;
   //generate nestedNumbers list
@@ -66,11 +85,9 @@ int main(void) {
       )
     )
   );
-  printList(*nestedNumbers, nestedNumbers+1, true);
-  //dummyList
-  nodeType* dummyList = createNode (
-    List, createNode(String, "Yankees", NULL),
-    createNode(List, createNode(Integer, &i1, NULL), createNode(Nil, NULL, NULL))
-  );
+  str = ConcatAll(nestedNumbers);
+  printf("\n %s", str);
+  free(str);
+  freeNodes(nestedNumbers);
 }
 
