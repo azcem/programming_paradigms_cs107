@@ -4,8 +4,8 @@
 using namespace std;
 
 //takes a ruleName string and grammar and returns a vector of its expansion
-vector<string> expandRule(map<string, Definition> grammar, string rule) {
-  Production root = grammar[rule].getRandomProduction();
+vector<string> expandRule(map<string, Definition>* grammar, string rule) {
+  Production root = (*grammar)[rule].getRandomProduction();
   vector<string> res;
 
   //populate

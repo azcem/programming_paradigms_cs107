@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   Production root = grammar["<start>"].getRandomProduction();
   for (int i = 1; i <= 3; i++) {
     cout << "Version " << i << endl;
-    cout << printWords(expandRule(grammar, "<start>")) << endl;
+    cout << printWords(expandRule(&grammar, "<start>")) << endl;
   }
   return 0;
 }
