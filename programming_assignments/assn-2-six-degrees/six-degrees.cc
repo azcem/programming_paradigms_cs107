@@ -1,4 +1,5 @@
 #include <vector>
+#include <map>
 #include <list>
 #include <set>
 #include <strings.h>
@@ -34,7 +35,57 @@ static string promptForActor(const string& prompt, const imdb& db)
     if (db.getCredits(response, credits)) return response;
     cout << "We couldn't find \"" << response << "\" in the movie database. "
 	 << "Please try again." << endl;
+ }
+}
+
+void generateShortestPath(imdb& db, const string& start, const string& target) {
+  list<path> partialPaths;
+  set<string> previouslySeenActors;
+  set<film> previouslySeenFilms;
+
+  map<string, vector<film>> actorFilmCache;
+  map<film, vector<string>> filmCastCache;
+
+  path startPath = path(start);
+  partialPaths.push_back(startPath);
+  while (partialPaths.size() > 0 && partialPaths.front().getLength() < 6) {
+    path workingPath = partialPaths.front();
+    partialPaths.pop_front();
+    string actor = workingPath.getLastPlayer();
+    vector<film> films;
+    auto cached_films = actorFilmCache.find(actor);
+    if (cached_films == actorFilmCache.end()) {
+      db.getCredits(actor, films);
+      actorFilmCache.insert({actor, films});
+    }
+    else {
+      films = cached_films->second;
+    }
+    for (auto film : films) {
+      if (!previouslySeenFilms.insert(film).second) continue;
+      vector<string> cast;
+      auto cached_cast = filmCastCache.find(film);
+      if (cached_cast == filmCastCache.end()){
+        db.getCast(film, cast);
+        filmCastCache.insert({film, cast});
+      }
+      else{
+        cast = cached_cast->second;
+      }
+      for (auto member : cast) {
+        if (!previouslySeenActors.insert(member).second) continue;
+        path clonedPath = path(workingPath);
+        clonedPath.addConnection(film, member);
+        if (member == target) {
+          cout << clonedPath;
+          return;
+        } else {
+          partialPaths.push_back(clonedPath);
+        }
+      }
+    }
   }
+  cout << "Couldn't find a path :(" << endl;
 }
 
 /**
@@ -54,7 +105,8 @@ static string promptForActor(const string& prompt, const imdb& db)
 
 int main(int argc, const char *argv[])
 {
-  imdb db(determinePathToData(argv[1])); // inlined in imdb-utils.h
+  // imdb db(determinePathToData(argv[1])); // inlined in imdb-utils.h
+  imdb db("../assn-2-six-degrees-data/little-endian/"); // inlined in imdb-utils.h
   if (!db.good()) {
     cout << "Failed to properly initialize the imdb database." << endl;
     cout << "Please check to make sure the source files exist and that you have permission to read them." << endl;
@@ -70,7 +122,7 @@ int main(int argc, const char *argv[])
       cout << "Good one.  This is only interesting if you specify two different people." << endl;
     } else {
       // replace the following line by a call to your generateShortestPath routine... 
-      cout << endl << "No path between those two people could be found." << endl << endl;
+      generateShortestPath(db, source, target);
     }
   }
   
