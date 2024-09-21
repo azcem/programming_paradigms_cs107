@@ -4,16 +4,18 @@
 #include <string.h>
 #include <assert.h>
 
+#define DEFAULT_SIZE 16
+
 void VectorNew(vector *v, int elemSize, VectorFreeFunction freeFn, int initialAllocation)
 {
   assert(elemSize > 0);
-  assert(initialAllocation > 0);
-  void* elemArray = malloc(initialAllocation * elemSize);
+  assert(initialAllocation >= 0);
+  v->size = initialAllocation == 0? DEFAULT_SIZE : initialAllocation;
+  void* elemArray = malloc(v->size * elemSize);
   v->elems = elemArray;
   v->elemSize = elemSize;
-  v->size = initialAllocation;
   v->logicalLength = 0;
-  v->initialAllocation = initialAllocation;
+  v->initialAllocation = v->size;
   v->VectorFreeFunction = freeFn;
 }
 
